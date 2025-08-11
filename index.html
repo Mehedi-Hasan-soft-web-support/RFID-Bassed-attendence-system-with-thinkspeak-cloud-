@@ -1,0 +1,768 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input, .control-group select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-duplicate {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-unauthorized {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .employee-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Attendance Management Portal</h1>
+            <p>Real-time RFID attendance tracking and management system</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalEmployees">0</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayAttendance">0</div>
+                <div class="stat-label">Today's Attendance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="presentToday">0</div>
+                <div class="stat-label">Present Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgAttendance">0%</div>
+                <div class="stat-label">Average Attendance</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>ThingSpeak Channel ID</label>
+                <input type="text" id="channelId" value="3032368" placeholder="Enter Channel ID">
+            </div>
+            <div class="control-group">
+                <label>Read API Key</label>
+                <input type="text" id="readApiKey" value="9MSMFITF66H4FBL6" placeholder="Enter Read API Key">
+            </div>
+            <div class="control-group">
+                <label>Date Filter</label>
+                <input type="date" id="dateFilter">
+            </div>
+            <div class="control-group">
+                <label>Employee Filter</label>
+                <select id="employeeFilter">
+                    <option value="">All Employees</option>
+                </select>
+            </div>
+            <div class="control-group" style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="fetchAttendanceData()">🔄 Refresh Data</button>
+            </div>
+        </div>
+
+        <div class="employee-actions">
+            <button class="btn btn-secondary" onclick="openAddEmployeeModal()">👤 Add Employee</button>
+            <button class="btn btn-secondary" onclick="exportToCSV()">📊 Export CSV</button>
+            <button class="btn btn-secondary" onclick="generateReport()">📋 Generate Report</button>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="table-container">
+            <div class="table-header">
+                📋 Attendance Records
+            </div>
+            <div id="tableContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading attendance data...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddEmployeeModal()">&times;</span>
+            <div class="modal-header">
+                <h2>Add New Employee</h2>
+                <p>Register a new employee for RFID attendance tracking</p>
+            </div>
+            <form id="addEmployeeForm">
+                <div class="form-group">
+                    <label for="employeeName">Employee Name</label>
+                    <input type="text" id="employeeName" required placeholder="Enter full name">
+                </div>
+                <div class="form-group">
+                    <label for="employeeUID">RFID Card UID</label>
+                    <input type="text" id="employeeUID" required placeholder="e.g., 233B1FBE" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label for="employeeId">Employee ID (Optional)</label>
+                    <input type="text" id="employeeId" placeholder="Enter employee ID">
+                </div>
+                <div class="form-group">
+                    <label for="department">Department (Optional)</label>
+                    <input type="text" id="department" placeholder="Enter department">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Add Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let attendanceData = [];
+        let employees = new Map();
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+            
+            // Load initial data
+            fetchAttendanceData();
+        });
+
+        async function fetchAttendanceData() {
+            const channelId = document.getElementById('channelId').value;
+            const readApiKey = document.getElementById('readApiKey').value;
+            
+            if (!channelId || !readApiKey) {
+                showAlert('Please enter both Channel ID and Read API Key', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${readApiKey}&results=1000`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data from ThingSpeak');
+                }
+                
+                const data = await response.json();
+                attendanceData = data.feeds || [];
+                
+                processData();
+                updateStats();
+                updateEmployeeFilter();
+                renderTable();
+                
+                showAlert('Data refreshed successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showAlert('Error fetching attendance data: ' + error.message, 'error');
+                document.getElementById('tableContent').innerHTML = 
+                    '<div class="loading">❌ Failed to load attendance data</div>';
+            }
+        }
+
+        function processData() {
+            employees.clear();
+            
+            attendanceData.forEach(record => {
+                const name = record.field1 ? record.field1.replace(/%20/g, ' ') : 'Unknown';
+                const uid = record.field2 || '';
+                
+                if (uid && !employees.has(uid)) {
+                    employees.set(uid, {
+                        name: name,
+                        uid: uid,
+                        totalRecords: 0,
+                        successfulAttendance: 0
+                    });
+                }
+                
+                if (employees.has(uid)) {
+                    employees.get(uid).totalRecords++;
+                    if (record.field3 === 'SUCCESS') {
+                        employees.get(uid).successfulAttendance++;
+                    }
+                }
+            });
+        }
+
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayRecords = attendanceData.filter(record => 
+                record.created_at && record.created_at.startsWith(today)
+            );
+            
+            const uniqueTodayEmployees = new Set();
+            todayRecords.forEach(record => {
+                if (record.field3 === 'SUCCESS' && record.field2) {
+                    uniqueTodayEmployees.add(record.field2);
+                }
+            });
+            
+            document.getElementById('totalEmployees').textContent = employees.size;
+            document.getElementById('todayAttendance').textContent = todayRecords.length;
+            document.getElementById('presentToday').textContent = uniqueTodayEmployees.size;
+            
+            // Calculate average attendance (simplified)
+            const avgAttendance = employees.size > 0 ? 
+                Math.round((uniqueTodayEmployees.size / employees.size) * 100) : 0;
+            document.getElementById('avgAttendance').textContent = avgAttendance + '%';
+        }
+
+        function updateEmployeeFilter() {
+            const select = document.getElementById('employeeFilter');
+            select.innerHTML = '<option value="">All Employees</option>';
+            
+            employees.forEach((employee, uid) => {
+                const option = document.createElement('option');
+                option.value = employee.name;
+                option.textContent = employee.name;
+                select.appendChild(option);
+            });
+        }
+
+        function renderTable() {
+            const dateFilter = document.getElementById('dateFilter').value;
+            const employeeFilter = document.getElementById('employeeFilter').value;
+            
+            let filteredData = attendanceData;
+            
+            if (dateFilter) {
+                filteredData = filteredData.filter(record => 
+                    record.created_at && record.created_at.startsWith(dateFilter)
+                );
+            }
+            
+            if (employeeFilter) {
+                filteredData = filteredData.filter(record => {
+                    const name = record.field1 ? record.field1.replace(/%20/g, ' ') : '';
+                    return name === employeeFilter;
+                });
+            }
+            
+            // Sort by creation time (newest first)
+            filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Employee Name</th>
+                            <th>Card UID</th>
+                            <th>Status</th>
+                            <th>Entry ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            filteredData.forEach(record => {
+                const date = new Date(record.created_at);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+                const name = record.field1 ? record.field1.replace(/%20/g, ' ') : 'N/A';
+                const uid = record.field2 || 'N/A';
+                const status = record.field3 || 'N/A';
+                const entryId = record.entry_id || 'N/A';
+                
+                let statusClass = 'status ';
+                if (status === 'SUCCESS') statusClass += 'status-success';
+                else if (status === 'DUPLICATE') statusClass += 'status-duplicate';
+                else if (status === 'UNAUTHORIZED') statusClass += 'status-unauthorized';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${dateStr}</td>
+                        <td>${timeStr}</td>
+                        <td>${name}</td>
+                        <td>${uid}</td>
+                        <td><span class="${statusClass}">${status}</span></td>
+                        <td>${entryId}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            
+            if (filteredData.length === 0) {
+                tableHTML = '<div class="loading">📭 No attendance records found for the selected criteria</div>';
+            }
+            
+            document.getElementById('tableContent').innerHTML = tableHTML;
+        }
+
+        function showLoading() {
+            document.getElementById('tableContent').innerHTML = 
+                '<div class="loading"><div class="spinner"></div><div>Fetching latest attendance data...</div></div>';
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function openAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').style.display = 'block';
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').style.display = 'none';
+            document.getElementById('addEmployeeForm').reset();
+        }
+
+        document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('employeeName').value;
+            const uid = document.getElementById('employeeUID').value.toUpperCase();
+            const empId = document.getElementById('employeeId').value;
+            const dept = document.getElementById('department').value;
+            
+            showAlert(`Employee added to local list: ${name} (${uid}). Note: You'll need to update your Arduino code to authorize this card.`, 'success');
+            
+            closeAddEmployeeModal();
+        });
+
+        function exportToCSV() {
+            if (attendanceData.length === 0) {
+                showAlert('No data to export', 'error');
+                return;
+            }
+            
+            let csvContent = "Date,Time,Employee Name,Card UID,Status,Entry ID\n";
+            
+            attendanceData.forEach(record => {
+                const date = new Date(record.created_at);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+                const name = (record.field1 ? record.field1.replace(/%20/g, ' ') : 'N/A').replace(/,/g, ';');
+                const uid = record.field2 || 'N/A';
+                const status = record.field3 || 'N/A';
+                const entryId = record.entry_id || 'N/A';
+                
+                csvContent += `"${dateStr}","${timeStr}","${name}","${uid}","${status}","${entryId}"\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance_report_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert('Attendance report exported successfully!', 'success');
+        }
+
+        function generateReport() {
+            if (attendanceData.length === 0) {
+                showAlert('No data available for report generation', 'error');
+                return;
+            }
+            
+            const report = {
+                totalRecords: attendanceData.length,
+                totalEmployees: employees.size,
+                successfulEntries: attendanceData.filter(r => r.field3 === 'SUCCESS').length,
+                duplicateAttempts: attendanceData.filter(r => r.field3 === 'DUPLICATE').length,
+                unauthorizedAttempts: attendanceData.filter(r => r.field3 === 'UNAUTHORIZED').length,
+                generatedAt: new Date().toLocaleString()
+            };
+            
+            alert(`📊 ATTENDANCE REPORT
+            
+Total Records: ${report.totalRecords}
+Total Employees: ${report.totalEmployees}
+Successful Entries: ${report.successfulEntries}
+Duplicate Attempts: ${report.duplicateAttempts}
+Unauthorized Attempts: ${report.unauthorizedAttempts}
+
+Generated: ${report.generatedAt}`);
+        }
+
+        // Add event listeners for filters
+        document.getElementById('dateFilter').addEventListener('change', renderTable);
+        document.getElementById('employeeFilter').addEventListener('change', renderTable);
+
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('addEmployeeModal');
+            if (event.target === modal) {
+                closeAddEmployeeModal();
+            }
+        });
+    </script>
+</body>
+</html>
